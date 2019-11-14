@@ -25,7 +25,7 @@ class PokemonMasterFragment :
 
             adapter = ListItemAdapter {
                 viewModel.fetchSinglePokemon(it.name)
-                findNavController().navigate(PokemonMasterFragmentDirections.goToPokemonDetail())
+                findNavController().navigate(PokemonMasterFragmentDirections.goToPokemonDetail(it.name.capitalize()))
             }
             binding.recyclerView.adapter = adapter
 

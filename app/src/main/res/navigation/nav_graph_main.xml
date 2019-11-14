@@ -8,7 +8,7 @@
     <fragment
         android:id="@+id/pokemonMasterFragment"
         android:name="nz.co.mikesimpson.pokedex.ui.pokemon.PokemonMasterFragment"
-        android:label="PokemonMasterFragment"
+        android:label="PokeDex"
         tools:layout="@layout/pokemon_master_fragment">
         <action
             android:id="@+id/go_to_pokemon_detail"
@@ -21,6 +21,10 @@
     <fragment
         android:id="@+id/pokemonDetailFragment"
         android:name="nz.co.mikesimpson.pokedex.ui.pokemon.PokemonDetailFragment"
-        android:label="PokemonDetailFragment"
-        tools:layout="@layout/pokemon_detail_fragment"/>
+        android:label="{name}"
+        tools:layout="@layout/pokemon_detail_fragment">
+        <argument
+            android:name="name"
+            app:argType="string"/>
+    </fragment>
 </navigation>
