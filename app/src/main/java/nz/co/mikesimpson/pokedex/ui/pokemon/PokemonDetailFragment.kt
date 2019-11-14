@@ -8,10 +8,10 @@ import android.view.View
 import android.view.ViewGroup
 import nz.co.mikesimpson.pokedex.R
 
-class PokemonMasterFragment : Fragment() {
+class PokemonDetailFragment : Fragment() {
 
     companion object {
-        fun newInstance() = PokemonMasterFragment()
+        fun newInstance() = PokemonDetailFragment()
     }
 
     private lateinit var viewModel: PokemonViewModel
