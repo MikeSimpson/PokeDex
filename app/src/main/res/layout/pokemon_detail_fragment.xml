@@ -11,21 +11,28 @@
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/main"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".ui.pokemon.PokemonDetailFragment">
 
         <TextView
-            android:id="@+id/message"
+            android:id="@+id/name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@{viewModel.pokemon.name}"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="Farfetch'd" />
+
+        <ImageView
+            android:id="@+id/iv_sprite"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:contentDescription='@{viewModel.pokemon.name + "Sprite"}'
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/name" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

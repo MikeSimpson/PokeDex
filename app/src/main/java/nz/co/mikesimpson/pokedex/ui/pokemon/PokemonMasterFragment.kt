@@ -39,10 +39,12 @@ class PokemonMasterFragment :
 
     private fun subscribePokemonList() {
         viewModel.pokemonList.observe(viewLifecycleOwner, Observer {
-            adapter.submitList(it.results)
+            it?.let {
+                adapter.submitList(it.results)
+            }
         })
         viewModel.listLoading.observe(viewLifecycleOwner, Observer {
-            binding.swipeRefresh.isRefreshing = it
+            binding.swipeRefresh.isRefreshing = it == true
         })
     }
 }

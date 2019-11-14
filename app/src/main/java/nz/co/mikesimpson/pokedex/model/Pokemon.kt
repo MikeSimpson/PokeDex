@@ -6,5 +6,6 @@ import com.squareup.moshi.JsonClass
 data class Pokemon(
     val name: String,
     val height: Int,
-    val weight: Int
+    val weight: Int,
+    val sprites: SpriteSet
 )
