@@ -38,7 +38,7 @@ class PokemonMasterFragment :
     }
 
     private fun subscribePokemonList() {
-        viewModel.pokemonList.observe(viewLifecycleOwner, Observer {
+        viewModel.filteredList.observe(viewLifecycleOwner, Observer {
             it?.let {
                 adapter.submitList(it.results)
             }

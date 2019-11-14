@@ -15,6 +15,15 @@
         android:layout_height="match_parent"
         tools:context=".ui.pokemon.PokemonMasterFragment">
 
+        <EditText
+            android:id="@+id/et_filter"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@={viewModel.pokemonFilter}"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:id="@+id/swipe_refresh"
             android:layout_width="0dp"
@@ -22,7 +31,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toBottomOf="@+id/et_filter">
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_view"

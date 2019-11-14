@@ -1,10 +1,7 @@
 package nz.co.mikesimpson.pokedex.ui.pokemon
 
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.squareup.moshi.Moshi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -17,9 +14,16 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 
 class PokemonViewModel : ViewModel() {
 
-    private val _pokemonList = MutableLiveData<PaginatedResult>()
-    val pokemonList: LiveData<PaginatedResult> = _pokemonList
-
+    private val pokemonList = MutableLiveData<PaginatedResult>()
+    val pokemonFilter = MutableLiveData<String>().apply { value = "" }
+    val filteredList = MediatorLiveData<PaginatedResult>().apply {
+        addSource(pokemonFilter) {
+            this.value = getFilteredList(pokemonList.value, it)
+        }
+        addSource(pokemonList) {
+            this.value = getFilteredList(it, pokemonFilter.value)
+        }
+    }
     private val _pokemon = MutableLiveData<Pokemon>()
     val pokemon: LiveData<Pokemon> = _pokemon
 
@@ -50,7 +54,9 @@ class PokemonViewModel : ViewModel() {
             pokemonService.listPokemon(limit = 151)
         }
         when (response.code()) {
-            in 200..299 -> _pokemonList.value = response.body()
+            in 200..299 -> {
+                pokemonList.value = response.body()
+            }
             in 500..599 -> {
                 _errorMessage.value =
                     "Oops! We couldn't find any Pokémon, the API might be down :("
@@ -86,5 +92,14 @@ class PokemonViewModel : ViewModel() {
             }
         }
         _pokemonLoading.value = false
+    }
+
+    private fun getFilteredList(list: PaginatedResult?, filter: String?): PaginatedResult? {
+        val fullList = pokemonList.value?.results
+        return fullList?.let {
+            pokemonList.value?.copy(results = it.filter { item ->
+                item.name.startsWith(pokemonFilter.value.toString(), ignoreCase = true)
+            })
+        }
     }
 }
