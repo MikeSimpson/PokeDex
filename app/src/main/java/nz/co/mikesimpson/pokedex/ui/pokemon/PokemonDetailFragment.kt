@@ -7,26 +7,18 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import nz.co.mikesimpson.pokedex.R
+import nz.co.mikesimpson.pokedex.databinding.PokemonDetailFragmentBinding
+import nz.co.mikesimpson.pokedex.ui.common.BaseFragment
 
-class PokemonDetailFragment : Fragment() {
-
-    companion object {
-        fun newInstance() = PokemonDetailFragment()
-    }
-
+class PokemonDetailFragment :
+    BaseFragment<PokemonDetailFragmentBinding>(R.layout.pokemon_detail_fragment) {
     private lateinit var viewModel: PokemonViewModel
-
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        return inflater.inflate(R.layout.pokemon_master_fragment, container, false)
-    }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProviders.of(this).get(PokemonViewModel::class.java)
-        // TODO: Use the ViewModel
+        activity?.let { activity ->
+            viewModel = ViewModelProviders.of(activity).get(PokemonViewModel::class.java)
+            binding.viewModel = viewModel
+        }
     }
-
 }

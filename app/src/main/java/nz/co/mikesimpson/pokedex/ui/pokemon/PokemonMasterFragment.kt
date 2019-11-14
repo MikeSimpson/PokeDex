@@ -2,31 +2,47 @@ package nz.co.mikesimpson.pokedex.ui.pokemon
 
 import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import nz.co.mikesimpson.pokedex.R
+import nz.co.mikesimpson.pokedex.databinding.PokemonMasterFragmentBinding
+import nz.co.mikesimpson.pokedex.ui.common.BaseFragment
+import nz.co.mikesimpson.pokedex.ui.common.ListItemAdapter
+import nz.co.mikesimpson.pokedex.ui.common.autoCleared
 
-class PokemonMasterFragment : Fragment() {
-
-    companion object {
-        fun newInstance() = PokemonMasterFragment()
-    }
+class PokemonMasterFragment :
+    BaseFragment<PokemonMasterFragmentBinding>(R.layout.pokemon_master_fragment) {
 
     private lateinit var viewModel: PokemonViewModel
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        return inflater.inflate(R.layout.pokemon_master_fragment, container, false)
-    }
+    private var adapter by autoCleared<ListItemAdapter>()
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProviders.of(this).get(PokemonViewModel::class.java)
-        // TODO: Use the ViewModel
+        activity?.let { activity ->
+            viewModel = ViewModelProviders.of(activity).get(PokemonViewModel::class.java)
+            binding.viewModel = viewModel
+
+            adapter = ListItemAdapter {
+                viewModel.fetchSinglePokemon(it.name)
+                findNavController().navigate(PokemonMasterFragmentDirections.goToPokemonDetail())
+            }
+            binding.recyclerView.adapter = adapter
+
+            binding.swipeRefresh.setOnRefreshListener {
+                viewModel.fetchPokemonList()
+            }
+
+            subscribePokemonList()
+        }
     }
 
+    private fun subscribePokemonList() {
+        viewModel.pokemonList.observe(viewLifecycleOwner, Observer {
+            adapter.submitList(it.results)
+        })
+        viewModel.listLoading.observe(viewLifecycleOwner, Observer {
+            binding.swipeRefresh.isRefreshing = it
+        })
+    }
 }
