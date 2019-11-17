@@ -30,7 +30,9 @@ class PokemonDetailFragment :
         viewModel.pokemon.observe(viewLifecycleOwner, Observer { pokemon ->
             pokemon?.sprites?.frontDefault?.let { sprite ->
                 context?.let { ctx ->
-                    Glide.with(ctx).load(sprite).into(binding.ivSprite)
+                    Glide.with(ctx)
+                        .load(sprite)
+                        .into(binding.ivSprite)
                 }
             }
         })

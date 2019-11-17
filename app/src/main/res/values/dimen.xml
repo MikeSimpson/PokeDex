@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="spacing_single">16dp</dimen>
+    <dimen name="text_size">22sp</dimen>
+    <dimen name="sprite_height">300dp</dimen>
+</resources>

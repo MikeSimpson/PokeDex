@@ -1,11 +1,13 @@
 package nz.co.mikesimpson.pokedex.ui.pokemon
 
+import android.accounts.NetworkErrorException
 import android.util.Log
 import androidx.lifecycle.*
 import com.squareup.moshi.Moshi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import nz.co.mikesimpson.pokedex.model.ListItem
 import nz.co.mikesimpson.pokedex.model.PaginatedResult
 import nz.co.mikesimpson.pokedex.model.Pokemon
 import nz.co.mikesimpson.pokedex.repository.PokemonService
@@ -14,16 +16,19 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 
 class PokemonViewModel : ViewModel() {
 
-    private val pokemonList = MutableLiveData<PaginatedResult>()
+    private val paginatedList = MutableLiveData<PaginatedResult>()
     val pokemonFilter = MutableLiveData<String>().apply { value = "" }
-    val filteredList = MediatorLiveData<PaginatedResult>().apply {
+
+    private val _filteredList = MediatorLiveData<List<ListItem>>().apply {
         addSource(pokemonFilter) {
-            this.value = getFilteredList(pokemonList.value, it)
+            this.value = getFilteredList(paginatedList.value, it)
         }
-        addSource(pokemonList) {
+        addSource(paginatedList) {
             this.value = getFilteredList(it, pokemonFilter.value)
         }
     }
+    val filteredList: LiveData<List<ListItem>> = _filteredList
+
     private val _pokemon = MutableLiveData<Pokemon>()
     val pokemon: LiveData<Pokemon> = _pokemon
 
@@ -47,59 +52,75 @@ class PokemonViewModel : ViewModel() {
         fetchPokemonList()
     }
 
-    fun fetchPokemonList() = viewModelScope.launch {
-        _listLoading.value = true
+    fun fetchPokemonList(offset: Int = paginatedList.value?.results?.size ?: 0) =
+        viewModelScope.launch {
+            _listLoading.value = true
+            _errorMessage.value = null
 
-        val response = withContext((Dispatchers.IO)) {
-            pokemonService.listPokemon(limit = 151)
+            try {
+                val response = withContext((Dispatchers.IO)) {
+                    pokemonService.listPokemon(offset = offset)
+                }
+                when (response.code()) {
+                    in 200..299 -> {
+                        response.body()?.let { result ->
+                            val combinedList = paginatedList.value?.results?.toMutableList()
+                            combinedList?.addAll(result.results)
+                            paginatedList.value = combinedList?.let {
+                                result.copy(results = it)
+                            } ?: result
+                        }
+                    }
+                    in 500..599 -> {
+                        _errorMessage.value =
+                            "Oops! We couldn't find any Pokémon, the API might be down :("
+                        Log.e("Pokemon", response.message())
+                    }
+                    else -> {
+                        _errorMessage.value =
+                            "Oops! We couldn't find any Pokémon, that's probably my fault. Sorry!"
+                        Log.e("Pokemon", response.message())
+                    }
+                }
+            } catch (e: Exception) { // todo don't catch generic exception..
+                _errorMessage.value = e.message
+            }
+            _listLoading.value = false
         }
-        when (response.code()) {
-            in 200..299 -> {
-                pokemonList.value = response.body()
-            }
-            in 500..599 -> {
-                _errorMessage.value =
-                    "Oops! We couldn't find any Pokémon, the API might be down :("
-                Log.e("Pokemon", response.message())
-            }
-            else -> {
-                _errorMessage.value =
-                    "Oops! We couldn't find any Pokémon, that's probably my fault. Sorry!"
-                Log.e("Pokemon", response.message())
-            }
-        }
-        _listLoading.value = false
-    }
 
     fun fetchSinglePokemon(name: String) = viewModelScope.launch {
         if (_pokemon.value?.name != name) _pokemon.value = null
 
         _pokemonLoading.value = true
-        val response = withContext((Dispatchers.IO)) {
-            pokemonService.getSinglePokemon(name)
-        }
-        when (response.code()) {
-            in 200..299 -> _pokemon.value = response.body()
-            in 500..599 -> {
-                _errorMessage.value =
-                    "Oops! We couldn't get details for $name, the API might be down :("
-                Log.e("Pokemon", response.message())
+        _errorMessage.value = null
+
+        try {
+            val response = withContext((Dispatchers.IO)) {
+                pokemonService.getSinglePokemon(name)
             }
-            else -> {
-                _errorMessage.value =
-                    "Oops! We couldn't get details for $name, that's probably our fault. Sorry!"
-                Log.e("Pokemon", response.message())
+            when (response.code()) {
+                in 200..299 -> _pokemon.value = response.body()
+                in 500..599 -> {
+                    _errorMessage.value =
+                        "Oops! We couldn't get details for $name, the API might be down :("
+                    Log.e("Pokemon", response.message())
+                }
+                else -> {
+                    _errorMessage.value =
+                        "Oops! We couldn't get details for $name, that's probably our fault. Sorry!"
+                    Log.e("Pokemon", response.message())
+                }
             }
+        } catch (e: Exception) {
+            _errorMessage.value = e.message
         }
         _pokemonLoading.value = false
     }
 
-    private fun getFilteredList(list: PaginatedResult?, filter: String?): PaginatedResult? {
-        val fullList = pokemonList.value?.results
-        return fullList?.let {
-            pokemonList.value?.copy(results = it.filter { item ->
-                item.name.startsWith(pokemonFilter.value.toString(), ignoreCase = true)
-            })
+    private fun getFilteredList(list: PaginatedResult?, filter: String?): List<ListItem>? {
+        val fullList = paginatedList.value?.results
+        return fullList?.filter { item ->
+            item.name.startsWith(pokemonFilter.value.toString(), ignoreCase = true)
         }
     }
 }

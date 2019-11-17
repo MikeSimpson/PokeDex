@@ -2,8 +2,11 @@ package nz.co.mikesimpson.pokedex.ui.pokemon
 
 import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
+import android.view.View
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import nz.co.mikesimpson.pokedex.R
 import nz.co.mikesimpson.pokedex.databinding.PokemonMasterFragmentBinding
 import nz.co.mikesimpson.pokedex.ui.common.BaseFragment
@@ -28,19 +31,34 @@ class PokemonMasterFragment :
                 findNavController().navigate(PokemonMasterFragmentDirections.goToPokemonDetail(it.name.capitalize()))
             }
             binding.recyclerView.adapter = adapter
+            binding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    super.onScrolled(recyclerView, dx, dy)
+                    if (recyclerView.hasScrolledToBottom()) {
+                        viewModel.fetchPokemonList()
+                    }
+                }
+            })
+            View.GONE
 
             binding.swipeRefresh.setOnRefreshListener {
-                viewModel.fetchPokemonList()
+                viewModel.fetchPokemonList(0)
             }
 
             subscribePokemonList()
         }
     }
 
+    private fun RecyclerView.hasScrolledToBottom(): Boolean {
+        val layoutManager = layoutManager as? LinearLayoutManager
+        val itemCount = viewModel.filteredList.value?.size
+        return layoutManager?.findLastCompletelyVisibleItemPosition() == itemCount?.minus(1) || itemCount == 0
+    }
+
     private fun subscribePokemonList() {
         viewModel.filteredList.observe(viewLifecycleOwner, Observer {
             it?.let {
-                adapter.submitList(it.results)
+                adapter.submitList(it)
             }
         })
         viewModel.listLoading.observe(viewLifecycleOwner, Observer {

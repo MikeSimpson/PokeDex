@@ -5,6 +5,8 @@
 
     <data>
 
+        <import type="android.view.View" />
+
         <variable
             name="viewModel"
             type="nz.co.mikesimpson.pokedex.ui.pokemon.PokemonViewModel" />
@@ -13,7 +15,20 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:padding="@dimen/spacing_single"
+        android:visibility="@{viewModel.pokemon == null ? View.GONE : View.VISIBLE}"
         tools:context=".ui.pokemon.PokemonDetailFragment">
+
+        <TextView
+            android:id="@+id/tv_error"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@{viewModel.errorMessage}"
+            android:visibility="@{viewModel.errorMessage == null ? View.GONE : View.VISIBLE}"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/name"
@@ -22,17 +37,28 @@
             android:text="@{viewModel.pokemon.name}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tv_error"
             tools:text="Farfetch'd" />
 
         <ImageView
             android:id="@+id/iv_sprite"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/sprite_height"
+            android:layout_margin="@dimen/spacing_single"
             android:contentDescription='@{viewModel.pokemon.name + "Sprite"}'
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/name" />
+
+        <TextView
+            android:id="@+id/stats"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{String.format(@string/stat_block, viewModel.pokemon.height, viewModel.pokemon.weight)}"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/iv_sprite"
+            tools:text="Farfetch'd" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
