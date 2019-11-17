@@ -52,13 +52,17 @@ class PokemonMasterFragment :
     private fun RecyclerView.hasScrolledToBottom(): Boolean {
         val layoutManager = layoutManager as? LinearLayoutManager
         val itemCount = viewModel.filteredList.value?.size
-        return layoutManager?.findLastCompletelyVisibleItemPosition() == itemCount?.minus(1) || itemCount == 0
+        val lastItem = layoutManager?.findLastCompletelyVisibleItemPosition()
+        return lastItem == (itemCount?.minus(1)) || lastItem == RecyclerView.NO_POSITION
     }
 
     private fun subscribePokemonList() {
         viewModel.filteredList.observe(viewLifecycleOwner, Observer {
             it?.let {
                 adapter.submitList(it)
+                if (binding.recyclerView.hasScrolledToBottom()) {
+                    viewModel.fetchPokemonList()
+                }
             }
         })
         viewModel.listLoading.observe(viewLifecycleOwner, Observer {

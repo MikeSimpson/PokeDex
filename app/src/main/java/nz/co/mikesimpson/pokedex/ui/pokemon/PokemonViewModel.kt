@@ -52,7 +52,9 @@ class PokemonViewModel : ViewModel() {
         fetchPokemonList()
     }
 
-    fun fetchPokemonList(offset: Int = paginatedList.value?.results?.size ?: 0) =
+    fun fetchPokemonList(offset: Int = paginatedList.value?.results?.size ?: 0) {
+        if (paginatedList.value?.count == paginatedList.value?.results?.size && offset != 0) return
+
         viewModelScope.launch {
             _listLoading.value = true
             _errorMessage.value = null
@@ -87,6 +89,7 @@ class PokemonViewModel : ViewModel() {
             }
             _listLoading.value = false
         }
+    }
 
     fun fetchSinglePokemon(name: String) = viewModelScope.launch {
         if (_pokemon.value?.name != name) _pokemon.value = null
